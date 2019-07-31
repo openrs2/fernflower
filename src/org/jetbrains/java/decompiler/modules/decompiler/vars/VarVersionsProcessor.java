@@ -40,7 +40,7 @@ public class VarVersionsProcessor {
 
     typeProcessor.calculateVarTypes(root, graph);
 
-    simpleMerge(typeProcessor, graph, method);
+    //simpleMerge(typeProcessor, graph, method);
 
     // FIXME: advanced merging
 
