@@ -57,6 +57,7 @@
       <url>https://repo.openrs2.dev/repository/openrs2/</url>
       <releases>
         <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
       </releases>
       <snapshots>
         <enabled>false</enabled>
