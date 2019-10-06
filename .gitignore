@@ -2,6 +2,6 @@
 /.gradle/
 /build/
 /target
-*.iml
+fernflower.iml
 pom.xml.releaseBackup
 release.properties
