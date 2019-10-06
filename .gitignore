@@ -3,3 +3,5 @@
 /build/
 /target
 *.iml
+pom.xml.releaseBackup
+release.properties
