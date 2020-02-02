@@ -72,9 +72,6 @@ public class ConstExprent extends Exprent {
     else if (-32768 <= val && val <= 32767) {
       return VarType.VARTYPE_SHORT;
     }
-    else if (0 <= val && val <= 0xFFFF) {
-      return VarType.VARTYPE_CHAR;
-    }
     else {
       return VarType.VARTYPE_INT;
     }
