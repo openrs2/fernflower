@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>fernflower</artifactId>
-  <version>1.0.3-SNAPSHOT</version>
+  <version>1.0.3</version>
   <packaging>jar</packaging>
 
   <name>Fernflower</name>
@@ -25,7 +25,7 @@
     <connection>scm:git:https://git.openrs2.dev/openrs2/fernflower.git</connection>
     <developerConnection>scm:git:git@git.openrs2.dev:openrs2/fernflower.git</developerConnection>
     <url>https://git.openrs2.dev/openrs2/fernflower</url>
-    <tag>HEAD</tag>
+    <tag>v1.0.3</tag>
   </scm>
   <issueManagement>
     <system>Gitea</system>
