@@ -131,7 +131,7 @@ public class MethodProcessorRunnable implements Runnable {
     ClearStructHelper.clearStatements(root);
 
     ExprProcessor proc = new ExprProcessor(md, varProc);
-    proc.processStatement(root, cl);
+    proc.processStatement(root, mt, cl);
 
     SequenceHelper.condenseSequences(root);
 

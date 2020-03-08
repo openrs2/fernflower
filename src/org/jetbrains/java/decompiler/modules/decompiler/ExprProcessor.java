@@ -15,6 +15,7 @@ import org.jetbrains.java.decompiler.modules.decompiler.sforms.FlattenStatements
 import org.jetbrains.java.decompiler.modules.decompiler.stats.*;
 import org.jetbrains.java.decompiler.modules.decompiler.vars.VarProcessor;
 import org.jetbrains.java.decompiler.struct.StructClass;
+import org.jetbrains.java.decompiler.struct.StructMethod;
 import org.jetbrains.java.decompiler.struct.attr.StructBootstrapMethodsAttribute;
 import org.jetbrains.java.decompiler.struct.attr.StructGeneralAttribute;
 import org.jetbrains.java.decompiler.struct.consts.ConstantPool;
@@ -102,7 +103,7 @@ public class ExprProcessor implements CodeConstants {
     varProcessor = varProc;
   }
 
-  public void processStatement(RootStatement root, StructClass cl) {
+  public void processStatement(RootStatement root, StructMethod mt, StructClass cl) {
     FlattenStatementsHelper flatthelper = new FlattenStatementsHelper();
     DirectGraph dgraph = flatthelper.buildDirectGraph(root);
 
@@ -151,7 +152,7 @@ public class ExprProcessor implements CodeConstants {
 
       BasicBlockStatement block = node.block;
       if (block != null) {
-        processBlock(block, data, cl);
+        processBlock(block, data, mt, cl);
         block.setExprents(data.getLstExprents());
       }
 
@@ -266,7 +267,7 @@ public class ExprProcessor implements CodeConstants {
     }
   }
 
-  public void processBlock(BasicBlockStatement stat, PrimitiveExprsList data, StructClass cl) {
+  public void processBlock(BasicBlockStatement stat, PrimitiveExprsList data, StructMethod mt, StructClass cl) {
 
     ConstantPool pool = cl.getPool();
     StructBootstrapMethodsAttribute bootstrap = cl.getAttribute(StructGeneralAttribute.ATTRIBUTE_BOOTSTRAP_METHODS);
