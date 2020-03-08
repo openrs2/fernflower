@@ -1,0 +1,39 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+  - name: build
+    image: registry.openrs2.dev/openrs2-dev
+    commands:
+      - mvn clean verify
+
+  - name: deploy
+    image: registry.openrs2.dev/openrs2-dev
+    commands:
+      - |
+        cat <<EOF > $${HOME}/.m2/settings.xml
+        <settings>
+          <servers>
+            <server>
+              <id>openrs2</id>
+              <username><![CDATA[$${REPO_USERNAME}]]></username>
+              <password><![CDATA[$${REPO_PASSWORD}]]></password>
+            </server>
+            <server>
+              <id>openrs2-snapshots</id>
+              <username><![CDATA[$${REPO_USERNAME}]]></username>
+              <password><![CDATA[$${REPO_PASSWORD}]]></password>
+            </server>
+          </servers>
+        </settings>
+        EOF
+      - mvn deploy
+    environment:
+      REPO_USERNAME:
+        from_secret: repo_username
+      REPO_PASSWORD:
+        from_secret: repo_password
+    when:
+      branch:
+        - master
