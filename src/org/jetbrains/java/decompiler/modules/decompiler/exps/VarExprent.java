@@ -16,6 +16,7 @@ import org.jetbrains.java.decompiler.struct.StructMethod;
 import org.jetbrains.java.decompiler.struct.attr.StructGeneralAttribute;
 import org.jetbrains.java.decompiler.struct.attr.StructLocalVariableTableAttribute;
 import org.jetbrains.java.decompiler.struct.attr.StructLocalVariableTypeTableAttribute;
+import org.jetbrains.java.decompiler.struct.attr.StructOriginalPcTableAttribute;
 import org.jetbrains.java.decompiler.struct.gen.VarType;
 import org.jetbrains.java.decompiler.struct.gen.generics.GenericFieldDescriptor;
 import org.jetbrains.java.decompiler.struct.gen.generics.GenericMain;
@@ -99,6 +100,20 @@ public class VarExprent extends Exprent {
       }
 
       if (definition) {
+        if (visibleOffset != -1) {
+          MethodWrapper method = (MethodWrapper) DecompilerContext.getProperty(DecompilerContext.CURRENT_METHOD_WRAPPER);
+          StructOriginalPcTableAttribute originalPcTable = method.methodStruct.getAttribute(StructGeneralAttribute.ATTRIBUTE_ORIGINAL_PC_TABLE);
+
+          if (originalPcTable != null && originalPcTable.hasOriginalPc(visibleOffset)) {
+            int pc = originalPcTable.getOriginalPc(visibleOffset);
+            buffer.append('@');
+            buffer.append(DecompilerContext.getImportCollector().getShortName("dev.openrs2.deob.annotation.Pc"));
+            buffer.append('(');
+            buffer.append(Integer.toString(pc));
+            buffer.append(") ");
+          }
+        }
+
         if (processor != null && processor.getVarFinal(varVersion) == VarTypeProcessor.VAR_EXPLICIT_FINAL) {
           buffer.append("final ");
         }
