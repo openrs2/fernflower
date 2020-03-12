@@ -843,11 +843,11 @@ public class FinallyProcessor {
         if (firstOp != secondOp) {
           // a-load/store instructions
           if (first.opcode == CodeConstants.opc_aload || first.opcode == CodeConstants.opc_astore) {
-            //for (int[] arr : lstStoreVars) {
-            //  if (arr[0] == firstOp && arr[1] == secondOp) {
+            for (int[] arr : lstStoreVars) {
+              if (arr[0] == firstOp && arr[1] == secondOp) {
                 return true;
-            //  }
-            //}
+              }
+            }
           }
 
           return false;
