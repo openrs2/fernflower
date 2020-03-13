@@ -40,20 +40,28 @@ public class VarExprent extends Exprent {
   private boolean definition = false;
   private final VarProcessor processor;
   private final int visibleOffset;
+  private final int bytecodeOffset;
   private int version = 0;
   private boolean classDef = false;
   private boolean stack = false;
 
+  @Deprecated
   public VarExprent(int index, VarType varType, VarProcessor processor) {
     this(index, varType, processor, -1);
   }
 
+  @Deprecated
   public VarExprent(int index, VarType varType, VarProcessor processor, int visibleOffset) {
+    this(index, varType, processor, visibleOffset, -1);
+  }
+
+  public VarExprent(int index, VarType varType, VarProcessor processor, int visibleOffset, int bytecodeOffset) {
     super(EXPRENT_VAR);
     this.index = index;
     this.varType = varType;
     this.processor = processor;
     this.visibleOffset = visibleOffset;
+    this.bytecodeOffset = bytecodeOffset;
   }
 
   @Override
@@ -73,7 +81,7 @@ public class VarExprent extends Exprent {
 
   @Override
   public Exprent copy() {
-    VarExprent var = new VarExprent(index, getVarType(), processor, visibleOffset);
+    VarExprent var = new VarExprent(index, getVarType(), processor, visibleOffset, bytecodeOffset);
     var.setDefinition(definition);
     var.setVersion(version);
     var.setClassDef(classDef);
@@ -100,12 +108,12 @@ public class VarExprent extends Exprent {
       }
 
       if (definition) {
-        if (visibleOffset != -1) {
+        if (bytecodeOffset != -1) {
           MethodWrapper method = (MethodWrapper) DecompilerContext.getProperty(DecompilerContext.CURRENT_METHOD_WRAPPER);
           StructOriginalPcTableAttribute originalPcTable = method.methodStruct.getAttribute(StructGeneralAttribute.ATTRIBUTE_ORIGINAL_PC_TABLE);
 
-          if (originalPcTable != null && originalPcTable.hasOriginalPc(visibleOffset)) {
-            int pc = originalPcTable.getOriginalPc(visibleOffset);
+          if (originalPcTable != null && originalPcTable.hasOriginalPc(bytecodeOffset)) {
+            int pc = originalPcTable.getOriginalPc(bytecodeOffset);
             buffer.append('@');
             buffer.append(DecompilerContext.getImportCollector().getShortName("dev.openrs2.deob.annotation.Pc"));
             buffer.append('(');

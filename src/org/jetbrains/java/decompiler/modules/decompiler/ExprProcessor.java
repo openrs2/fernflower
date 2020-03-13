@@ -323,7 +323,7 @@ public class ExprProcessor implements CodeConstants {
         case opc_fload:
         case opc_dload:
         case opc_aload:
-          pushEx(stack, exprlist, new VarExprent(instr.operand(0), varTypes[instr.opcode - opc_iload], varProcessor, bytecode_offset));
+          pushEx(stack, exprlist, new VarExprent(instr.operand(0), varTypes[instr.opcode - opc_iload], varProcessor, bytecode_offset, bytecode_offset));
           break;
         case opc_iaload:
         case opc_laload:
@@ -354,7 +354,7 @@ public class ExprProcessor implements CodeConstants {
           Exprent expr = stack.pop();
           int varindex = instr.operand(0);
           AssignmentExprent assign = new AssignmentExprent(
-            new VarExprent(varindex, varTypes[instr.opcode - opc_istore], varProcessor, nextMeaningfulOffset(block, i)), expr, bytecode_offsets);
+            new VarExprent(varindex, varTypes[instr.opcode - opc_istore], varProcessor, nextMeaningfulOffset(block, i), bytecode_offset), expr, bytecode_offsets);
           exprlist.add(assign);
           break;
         case opc_iastore:
@@ -416,7 +416,7 @@ public class ExprProcessor implements CodeConstants {
           pushEx(stack, exprlist, new FunctionExprent(FunctionExprent.FUNCTION_NEG, stack, bytecode_offsets));
           break;
         case opc_iinc:
-          VarExprent vevar = new VarExprent(instr.operand(0), VarType.VARTYPE_INT, varProcessor, bytecode_offset);
+          VarExprent vevar = new VarExprent(instr.operand(0), VarType.VARTYPE_INT, varProcessor, bytecode_offset, bytecode_offset);
           exprlist.add(new AssignmentExprent(vevar, new FunctionExprent(
             instr.operand(1) < 0 ? FunctionExprent.FUNCTION_SUB : FunctionExprent.FUNCTION_ADD, Arrays
             .asList(vevar.copy(), new ConstExprent(VarType.VARTYPE_INT, Math.abs(instr.operand(1)), null)),
