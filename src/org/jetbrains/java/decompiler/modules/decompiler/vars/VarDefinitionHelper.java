@@ -160,6 +160,7 @@ public class VarDefinitionHelper {
 
       // search for the first assignment to var [index]
       int addindex = 0;
+      int bytecodeOffset = -1;
       for (Exprent expr : lst) {
         if (setDefinition(expr, index)) {
           defset = true;
@@ -170,6 +171,7 @@ public class VarDefinitionHelper {
           for (Exprent exp : expr.getAllExprents(true)) {
             if (exp.type == Exprent.EXPRENT_VAR && ((VarExprent)exp).getIndex() == index) {
               foundvar = true;
+              bytecodeOffset = ((VarExprent) exp).getBytecodeOffset();
               break;
             }
           }
@@ -181,7 +183,7 @@ public class VarDefinitionHelper {
       }
 
       if (!defset) {
-        VarExprent var = new VarExprent(index, varproc.getVarType(new VarVersionPair(index.intValue(), 0)), varproc);
+        VarExprent var = new VarExprent(index, varproc.getVarType(new VarVersionPair(index.intValue(), 0)), varproc, -1, bytecodeOffset);
         var.setDefinition(true);
 
         lst.add(addindex, var);

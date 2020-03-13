@@ -64,6 +64,10 @@ public class VarExprent extends Exprent {
     this.bytecodeOffset = bytecodeOffset;
   }
 
+  public int getBytecodeOffset() {
+    return bytecodeOffset;
+  }
+
   @Override
   public VarType getExprType() {
     return getVarType();
