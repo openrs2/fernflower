@@ -287,35 +287,35 @@ public class ExprProcessor implements CodeConstants {
 
       switch (instr.opcode) {
         case opc_aconst_null:
-          pushEx(stack, exprlist, new ConstExprent(VarType.VARTYPE_NULL, null, bytecode_offsets));
+          pushEx(stack, exprlist, new ConstExprent(VarType.VARTYPE_NULL, null, bytecode_offsets), bytecode_offset);
           break;
         case opc_bipush:
         case opc_sipush:
-          pushEx(stack, exprlist, new ConstExprent(instr.operand(0), true, bytecode_offsets));
+          pushEx(stack, exprlist, new ConstExprent(instr.operand(0), true, bytecode_offsets), bytecode_offset);
           break;
         case opc_lconst_0:
         case opc_lconst_1:
-          pushEx(stack, exprlist, new ConstExprent(VarType.VARTYPE_LONG, (long)(instr.opcode - opc_lconst_0), bytecode_offsets));
+          pushEx(stack, exprlist, new ConstExprent(VarType.VARTYPE_LONG, (long)(instr.opcode - opc_lconst_0), bytecode_offsets), bytecode_offset);
           break;
         case opc_fconst_0:
         case opc_fconst_1:
         case opc_fconst_2:
-          pushEx(stack, exprlist, new ConstExprent(VarType.VARTYPE_FLOAT, (float)(instr.opcode - opc_fconst_0), bytecode_offsets));
+          pushEx(stack, exprlist, new ConstExprent(VarType.VARTYPE_FLOAT, (float)(instr.opcode - opc_fconst_0), bytecode_offsets), bytecode_offset);
           break;
         case opc_dconst_0:
         case opc_dconst_1:
-          pushEx(stack, exprlist, new ConstExprent(VarType.VARTYPE_DOUBLE, (double)(instr.opcode - opc_dconst_0), bytecode_offsets));
+          pushEx(stack, exprlist, new ConstExprent(VarType.VARTYPE_DOUBLE, (double)(instr.opcode - opc_dconst_0), bytecode_offsets), bytecode_offset);
           break;
         case opc_ldc:
         case opc_ldc_w:
         case opc_ldc2_w:
           PooledConstant cn = pool.getConstant(instr.operand(0));
           if (cn instanceof PrimitiveConstant) {
-            pushEx(stack, exprlist, new ConstExprent(consts[cn.type - CONSTANT_Integer], ((PrimitiveConstant)cn).value, bytecode_offsets));
+            pushEx(stack, exprlist, new ConstExprent(consts[cn.type - CONSTANT_Integer], ((PrimitiveConstant)cn).value, bytecode_offsets), bytecode_offset);
           }
           else if (cn instanceof LinkConstant) {
             //TODO: for now treat Links as Strings
-            pushEx(stack, exprlist, new ConstExprent(VarType.VARTYPE_STRING, ((LinkConstant)cn).elementname, bytecode_offsets));
+            pushEx(stack, exprlist, new ConstExprent(VarType.VARTYPE_STRING, ((LinkConstant)cn).elementname, bytecode_offsets), bytecode_offset);
           }
           break;
         case opc_iload:
@@ -323,7 +323,7 @@ public class ExprProcessor implements CodeConstants {
         case opc_fload:
         case opc_dload:
         case opc_aload:
-          pushEx(stack, exprlist, new VarExprent(instr.operand(0), varTypes[instr.opcode - opc_iload], varProcessor, bytecode_offset, bytecode_offset));
+          pushEx(stack, exprlist, new VarExprent(instr.operand(0), varTypes[instr.opcode - opc_iload], varProcessor, bytecode_offset, bytecode_offset), bytecode_offset);
           break;
         case opc_iaload:
         case opc_laload:
@@ -344,7 +344,7 @@ public class ExprProcessor implements CodeConstants {
             case opc_daload:
               vartype = VarType.VARTYPE_DOUBLE;
           }
-          pushEx(stack, exprlist, new ArrayExprent(arr, index, arrTypes[instr.opcode - opc_iaload], bytecode_offsets), vartype);
+          pushEx(stack, exprlist, new ArrayExprent(arr, index, arrTypes[instr.opcode - opc_iaload], bytecode_offsets), bytecode_offset, vartype);
           break;
         case opc_istore:
         case opc_lstore:
@@ -393,7 +393,7 @@ public class ExprProcessor implements CodeConstants {
         case opc_lrem:
         case opc_frem:
         case opc_drem:
-          pushEx(stack, exprlist, new FunctionExprent(func1[(instr.opcode - opc_iadd) / 4], stack, bytecode_offsets));
+          pushEx(stack, exprlist, new FunctionExprent(func1[(instr.opcode - opc_iadd) / 4], stack, bytecode_offsets), bytecode_offset);
           break;
         case opc_ishl:
         case opc_lshl:
@@ -407,13 +407,13 @@ public class ExprProcessor implements CodeConstants {
         case opc_lor:
         case opc_ixor:
         case opc_lxor:
-          pushEx(stack, exprlist, new FunctionExprent(func2[(instr.opcode - opc_ishl) / 2], stack, bytecode_offsets));
+          pushEx(stack, exprlist, new FunctionExprent(func2[(instr.opcode - opc_ishl) / 2], stack, bytecode_offsets), bytecode_offset);
           break;
         case opc_ineg:
         case opc_lneg:
         case opc_fneg:
         case opc_dneg:
-          pushEx(stack, exprlist, new FunctionExprent(FunctionExprent.FUNCTION_NEG, stack, bytecode_offsets));
+          pushEx(stack, exprlist, new FunctionExprent(FunctionExprent.FUNCTION_NEG, stack, bytecode_offsets), bytecode_offset);
           break;
         case opc_iinc:
           VarExprent vevar = new VarExprent(instr.operand(0), VarType.VARTYPE_INT, varProcessor, bytecode_offset, bytecode_offset);
@@ -437,14 +437,14 @@ public class ExprProcessor implements CodeConstants {
         case opc_i2b:
         case opc_i2c:
         case opc_i2s:
-          pushEx(stack, exprlist, new FunctionExprent(func3[instr.opcode - opc_i2l], stack, bytecode_offsets));
+          pushEx(stack, exprlist, new FunctionExprent(func3[instr.opcode - opc_i2l], stack, bytecode_offsets), bytecode_offset);
           break;
         case opc_lcmp:
         case opc_fcmpl:
         case opc_fcmpg:
         case opc_dcmpl:
         case opc_dcmpg:
-          pushEx(stack, exprlist, new FunctionExprent(func4[instr.opcode - opc_lcmp], stack, bytecode_offsets));
+          pushEx(stack, exprlist, new FunctionExprent(func4[instr.opcode - opc_lcmp], stack, bytecode_offsets), bytecode_offset);
           break;
         case opc_ifeq:
         case opc_ifne:
@@ -492,13 +492,13 @@ public class ExprProcessor implements CodeConstants {
         case opc_instanceof:
           stack.push(new ConstExprent(new VarType(pool.getPrimitiveConstant(instr.operand(0)).getString(), true), null, null));
         case opc_arraylength:
-          pushEx(stack, exprlist, new FunctionExprent(mapConsts.get(instr.opcode), stack, bytecode_offsets));
+          pushEx(stack, exprlist, new FunctionExprent(mapConsts.get(instr.opcode), stack, bytecode_offsets), bytecode_offset);
           break;
         case opc_getstatic:
         case opc_getfield:
           pushEx(stack, exprlist,
                  new FieldExprent(pool.getLinkConstant(instr.operand(0)), instr.opcode == opc_getstatic ? null : stack.pop(),
-                                  bytecode_offsets));
+                                  bytecode_offsets), bytecode_offset);
           break;
         case opc_putstatic:
         case opc_putfield:
@@ -526,7 +526,7 @@ public class ExprProcessor implements CodeConstants {
               exprlist.add(exprinv);
             }
             else {
-              pushEx(stack, exprlist, exprinv);
+              pushEx(stack, exprlist, exprinv, bytecode_offset);
             }
           }
           break;
@@ -538,65 +538,65 @@ public class ExprProcessor implements CodeConstants {
           if (instr.opcode != opc_multianewarray) {
             arrType = arrType.resizeArrayDim(arrType.arrayDim + dimensions);
           }
-          pushEx(stack, exprlist, new NewExprent(arrType, stack, dimensions, bytecode_offsets));
+          pushEx(stack, exprlist, new NewExprent(arrType, stack, dimensions, bytecode_offsets), bytecode_offset);
           break;
         case opc_newarray:
-          pushEx(stack, exprlist, new NewExprent(new VarType(arrTypeIds[instr.operand(0) - 4], 1), stack, 1, bytecode_offsets));
+          pushEx(stack, exprlist, new NewExprent(new VarType(arrTypeIds[instr.operand(0) - 4], 1), stack, 1, bytecode_offsets), bytecode_offset);
           break;
         case opc_dup:
-          pushEx(stack, exprlist, stack.getByOffset(-1).copy());
+          pushEx(stack, exprlist, stack.getByOffset(-1).copy(), bytecode_offset);
           break;
         case opc_dup_x1:
-          insertByOffsetEx(-2, stack, exprlist, -1);
+          insertByOffsetEx(-2, stack, exprlist, -1, bytecode_offset);
           break;
         case opc_dup_x2:
           if (stack.getByOffset(-2).getExprType().stackSize == 2) {
-            insertByOffsetEx(-2, stack, exprlist, -1);
+            insertByOffsetEx(-2, stack, exprlist, -1, bytecode_offset);
           }
           else {
-            insertByOffsetEx(-3, stack, exprlist, -1);
+            insertByOffsetEx(-3, stack, exprlist, -1, bytecode_offset);
           }
           break;
         case opc_dup2:
           if (stack.getByOffset(-1).getExprType().stackSize == 2) {
-            pushEx(stack, exprlist, stack.getByOffset(-1).copy());
+            pushEx(stack, exprlist, stack.getByOffset(-1).copy(), bytecode_offset);
           }
           else {
-            pushEx(stack, exprlist, stack.getByOffset(-2).copy());
-            pushEx(stack, exprlist, stack.getByOffset(-2).copy());
+            pushEx(stack, exprlist, stack.getByOffset(-2).copy(), -1);
+            pushEx(stack, exprlist, stack.getByOffset(-2).copy(), -1);
           }
           break;
         case opc_dup2_x1:
           if (stack.getByOffset(-1).getExprType().stackSize == 2) {
-            insertByOffsetEx(-2, stack, exprlist, -1);
+            insertByOffsetEx(-2, stack, exprlist, -1, bytecode_offset);
           }
           else {
-            insertByOffsetEx(-3, stack, exprlist, -2);
-            insertByOffsetEx(-3, stack, exprlist, -1);
+            insertByOffsetEx(-3, stack, exprlist, -2, -1);
+            insertByOffsetEx(-3, stack, exprlist, -1, -1);
           }
           break;
         case opc_dup2_x2:
           if (stack.getByOffset(-1).getExprType().stackSize == 2) {
             if (stack.getByOffset(-2).getExprType().stackSize == 2) {
-              insertByOffsetEx(-2, stack, exprlist, -1);
+              insertByOffsetEx(-2, stack, exprlist, -1, bytecode_offset);
             }
             else {
-              insertByOffsetEx(-3, stack, exprlist, -1);
+              insertByOffsetEx(-3, stack, exprlist, -1, bytecode_offset);
             }
           }
           else {
             if (stack.getByOffset(-3).getExprType().stackSize == 2) {
-              insertByOffsetEx(-3, stack, exprlist, -2);
-              insertByOffsetEx(-3, stack, exprlist, -1);
+              insertByOffsetEx(-3, stack, exprlist, -2, -1);
+              insertByOffsetEx(-3, stack, exprlist, -1, -1);
             }
             else {
-              insertByOffsetEx(-4, stack, exprlist, -2);
-              insertByOffsetEx(-4, stack, exprlist, -1);
+              insertByOffsetEx(-4, stack, exprlist, -2, -1);
+              insertByOffsetEx(-4, stack, exprlist, -1, -1);
             }
           }
           break;
         case opc_swap:
-          insertByOffsetEx(-2, stack, exprlist, -1);
+          insertByOffsetEx(-2, stack, exprlist, -1, bytecode_offset);
           stack.pop();
           break;
         case opc_pop:
@@ -632,20 +632,20 @@ public class ExprProcessor implements CodeConstants {
     return -1;
   }
 
-  private void pushEx(ExprentStack stack, List<Exprent> exprlist, Exprent exprent) {
-    pushEx(stack, exprlist, exprent, null);
+  private void pushEx(ExprentStack stack, List<Exprent> exprlist, Exprent exprent, int bytecodeOffset) {
+    pushEx(stack, exprlist, exprent, bytecodeOffset, null);
   }
 
-  private void pushEx(ExprentStack stack, List<Exprent> exprlist, Exprent exprent, VarType vartype) {
+  private void pushEx(ExprentStack stack, List<Exprent> exprlist, Exprent exprent, int bytecodeOffset, VarType vartype) {
     int varindex = VarExprent.STACK_BASE + stack.size();
-    VarExprent var = new VarExprent(varindex, vartype == null ? exprent.getExprType() : vartype, varProcessor);
+    VarExprent var = new VarExprent(varindex, vartype == null ? exprent.getExprType() : vartype, varProcessor, -1, bytecodeOffset);
     var.setStack(true);
 
     exprlist.add(new AssignmentExprent(var, exprent, null));
     stack.push(var.copy());
   }
 
-  private void insertByOffsetEx(int offset, ExprentStack stack, List<Exprent> exprlist, int copyoffset) {
+  private void insertByOffsetEx(int offset, ExprentStack stack, List<Exprent> exprlist, int copyoffset, int bytecodeOffset) {
 
     int base = VarExprent.STACK_BASE + stack.size();
 
@@ -653,14 +653,20 @@ public class ExprProcessor implements CodeConstants {
 
     for (int i = -1; i >= offset; i--) {
       Exprent varex = stack.pop();
-      VarExprent varnew = new VarExprent(base + i + 1, varex.getExprType(), varProcessor);
+
+      int varexBytecodeOffset = -1;
+      if (varex.type == Exprent.EXPRENT_VAR) {
+        varexBytecodeOffset = ((VarExprent) varex).getBytecodeOffset();
+      }
+
+      VarExprent varnew = new VarExprent(base + i + 1, varex.getExprType(), varProcessor, -1, varexBytecodeOffset);
       varnew.setStack(true);
       exprlist.add(new AssignmentExprent(varnew, varex, null));
       lst.add(0, (VarExprent)varnew.copy());
     }
 
     Exprent exprent = lst.get(lst.size() + copyoffset).copy();
-    VarExprent var = new VarExprent(base + offset, exprent.getExprType(), varProcessor);
+    VarExprent var = new VarExprent(base + offset, exprent.getExprType(), varProcessor, -1, bytecodeOffset);
     var.setStack(true);
     exprlist.add(new AssignmentExprent(var, exprent, null));
     lst.add(0, (VarExprent)var.copy());
@@ -716,7 +722,7 @@ public class ExprProcessor implements CodeConstants {
 
   public static PrimitiveExprsList getExpressionData(VarExprent var) {
     PrimitiveExprsList prlst = new PrimitiveExprsList();
-    VarExprent vartmp = new VarExprent(VarExprent.STACK_BASE, var.getExprType(), var.getProcessor());
+    VarExprent vartmp = new VarExprent(VarExprent.STACK_BASE, var.getExprType(), var.getProcessor(), -1, var.getBytecodeOffset());
     vartmp.setStack(true);
 
     prlst.getLstExprents().add(new AssignmentExprent(vartmp, var.copy(), null));
