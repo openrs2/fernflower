@@ -27,6 +27,7 @@ public class VarDefinitionHelper {
 
   private final HashSet<Integer> implDefVars;
 
+  private final Statement root;
   private final VarProcessor varproc;
 
   public VarDefinitionHelper(Statement root, StructMethod mt, VarProcessor varproc) {
@@ -35,6 +36,7 @@ public class VarDefinitionHelper {
     mapStatementVars = new HashMap<>();
     implDefVars = new HashSet<>();
 
+    this.root = root;
     this.varproc = varproc;
 
     VarNamesCollector vc = varproc.getVarNamesCollector();
@@ -160,7 +162,6 @@ public class VarDefinitionHelper {
 
       // search for the first assignment to var [index]
       int addindex = 0;
-      int bytecodeOffset = -1;
       for (Exprent expr : lst) {
         if (setDefinition(expr, index)) {
           defset = true;
@@ -171,7 +172,6 @@ public class VarDefinitionHelper {
           for (Exprent exp : expr.getAllExprents(true)) {
             if (exp.type == Exprent.EXPRENT_VAR && ((VarExprent)exp).getIndex() == index) {
               foundvar = true;
-              bytecodeOffset = ((VarExprent) exp).getBytecodeOffset();
               break;
             }
           }
@@ -183,6 +183,13 @@ public class VarDefinitionHelper {
       }
 
       if (!defset) {
+        /*
+         * Use the offset from the first assignment after the declaration. This
+         * ensures the original PC values are stable even if the deobfuscator
+         * re-orders code.
+         */
+        int bytecodeOffset = findMinBytecodeOffset(root, index);
+
         VarExprent var = new VarExprent(index, varproc.getVarType(new VarVersionPair(index.intValue(), 0)), varproc, -1, bytecodeOffset);
         var.setDefinition(true);
 
@@ -191,6 +198,81 @@ public class VarDefinitionHelper {
     }
   }
 
+  private int findMinBytecodeOffset(Statement statement, int index) {
+    int minBytecodeOffset = -1;
+
+    List<Exprent> exprs = statement.getExprents();
+    if (exprs != null) {
+      for (Exprent expr : exprs) {
+        int bytecodeOffset = findMinBytecodeOffset(expr, index);
+
+        if (bytecodeOffset == -1) {
+          continue;
+        }
+
+        if (minBytecodeOffset == -1 || bytecodeOffset < minBytecodeOffset) {
+          minBytecodeOffset = bytecodeOffset;
+        }
+      }
+    } else {
+      for (Object obj : statement.getSequentialObjects()) {
+        int bytecodeOffset;
+        if (obj instanceof Statement) {
+          bytecodeOffset = findMinBytecodeOffset((Statement) obj, index);
+        } else if (obj instanceof Exprent) {
+          bytecodeOffset = findMinBytecodeOffset((Exprent) obj, index);
+        } else {
+          throw new IllegalStateException();
+        }
+
+        if (bytecodeOffset == -1) {
+          continue;
+        }
+
+        if (minBytecodeOffset == -1 || bytecodeOffset < minBytecodeOffset) {
+          minBytecodeOffset = bytecodeOffset;
+        }
+      }
+    }
+
+    return minBytecodeOffset;
+  }
+
+  private int findMinBytecodeOffset(Exprent parent, int index) {
+    int minBytecodeOffset = -1;
+
+    List<Exprent> list = parent.getAllExprents(true);
+    list.add(parent);
+
+    for (Exprent expr : list) {
+      if (expr.type != Exprent.EXPRENT_ASSIGNMENT) {
+        continue;
+      }
+
+      AssignmentExprent assignment = (AssignmentExprent) expr;
+
+      Exprent left = assignment.getLeft();
+      if (left.type != Exprent.EXPRENT_VAR) {
+        continue;
+      }
+
+      VarExprent var = (VarExprent) left;
+      if (var.getIndex() != index) {
+        continue;
+      }
+
+      int bytecodeOffset = var.getBytecodeOffset();
+      if (bytecodeOffset == -1) {
+        continue;
+      }
+
+      if (minBytecodeOffset == -1 || bytecodeOffset < minBytecodeOffset) {
+        minBytecodeOffset = bytecodeOffset;
+      }
+    }
+
+    return minBytecodeOffset;
+  }
 
   // *****************************************************************************
   // private methods
