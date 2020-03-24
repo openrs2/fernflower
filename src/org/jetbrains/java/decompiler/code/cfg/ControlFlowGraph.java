@@ -358,7 +358,7 @@ public class ControlFlowGraph implements CodeConstants {
           block.addSuccessorException(handle);
         }
 
-        ExceptionRangeCFG range = new ExceptionRangeCFG(protectedRange, handle, handler.exceptionClass == null
+        ExceptionRangeCFG range = new ExceptionRangeCFG(protectedRange, handle, handler.handler, handler.exceptionClass == null
                                                                                 ? null
                                                                                 : Collections.singletonList(handler.exceptionClass));
         mapRanges.put(key, range);
@@ -654,7 +654,7 @@ public class ControlFlowGraph implements CodeConstants {
         if (setBoth.size() == lstRange.size()) {
           lstNewRange = new ArrayList<>();
           ExceptionRangeCFG newRange = new ExceptionRangeCFG(lstNewRange,
-                                                             mapNewNodes.get(range.getHandler().id), range.getExceptionTypes());
+                                                             mapNewNodes.get(range.getHandler().id), range.getHandlerBytecodeOffset(), range.getExceptionTypes());
           exceptions.add(newRange);
         }
         else {

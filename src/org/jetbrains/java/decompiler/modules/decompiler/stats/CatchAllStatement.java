@@ -53,9 +53,16 @@ public class CatchAllStatement extends Statement {
       }
     }
 
+    int bytecodeOffset = -1;
+    for (StatEdge edge : head.getSuccessorEdges(StatEdge.TYPE_EXCEPTION)) {
+      if (edge.getDestination() == handler) {
+        bytecodeOffset = edge.getDestinationBytecodeOffset();
+      }
+    }
+
     vars.add(new VarExprent(DecompilerContext.getCounterContainer().getCounterAndIncrement(CounterContainer.VAR_COUNTER),
                             new VarType(CodeConstants.TYPE_OBJECT, 0, "java/lang/Throwable"),
-                            DecompilerContext.getVarProcessor()));
+                            DecompilerContext.getVarProcessor(), -1, bytecodeOffset));
   }
 
 
@@ -165,13 +172,13 @@ public class CatchAllStatement extends Statement {
     if (this.monitor != null) {
       cas.monitor = new VarExprent(DecompilerContext.getCounterContainer().getCounterAndIncrement(CounterContainer.VAR_COUNTER),
                                    VarType.VARTYPE_INT,
-                                   DecompilerContext.getVarProcessor());
+                                   DecompilerContext.getVarProcessor(), -1, -1);
     }
 
     if (!this.vars.isEmpty()) {
       cas.vars.add(new VarExprent(DecompilerContext.getCounterContainer().getCounterAndIncrement(CounterContainer.VAR_COUNTER),
                               new VarType(CodeConstants.TYPE_OBJECT, 0, "java/lang/Throwable"),
-                              DecompilerContext.getVarProcessor()));
+                              DecompilerContext.getVarProcessor(), -1, this.vars.get(0).getBytecodeOffset()));
     }
 
     return cas;

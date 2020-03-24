@@ -26,6 +26,7 @@ public class StatEdge {
   private Statement source;
 
   private Statement destination;
+  private int destinationBytecodeOffset = -1;
 
   private List<String> exceptions;
 
@@ -46,8 +47,9 @@ public class StatEdge {
     this.destination = destination;
   }
 
-  public StatEdge(Statement source, Statement destination, List<String> exceptions) {
+  public StatEdge(Statement source, Statement destination, int destinationBytecodeOffset, List<String> exceptions) {
     this(TYPE_EXCEPTION, source, destination);
+    this.destinationBytecodeOffset = destinationBytecodeOffset;
     if (exceptions != null) {
       this.exceptions = new ArrayList<>(exceptions);
     }
@@ -75,6 +77,10 @@ public class StatEdge {
 
   public void setDestination(Statement destination) {
     this.destination = destination;
+  }
+
+  public int getDestinationBytecodeOffset() {
+    return destinationBytecodeOffset;
   }
 
   public List<String> getExceptions() {

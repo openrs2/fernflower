@@ -10,11 +10,13 @@ import java.util.stream.Collectors;
 public class ExceptionRangeCFG {
   private final List<BasicBlock> protectedRange; // FIXME: replace with set
   private BasicBlock handler;
+  private int handlerBytecodeOffset;
   private List<String> exceptionTypes;
 
-  public ExceptionRangeCFG(List<BasicBlock> protectedRange, BasicBlock handler, List<String> exceptionType) {
+  public ExceptionRangeCFG(List<BasicBlock> protectedRange, BasicBlock handler, int handlerBytecodeOffset, List<String> exceptionType) {
     this.protectedRange = protectedRange;
     this.handler = handler;
+    this.handlerBytecodeOffset = handlerBytecodeOffset;
 
     if (exceptionType != null) {
       this.exceptionTypes = new ArrayList<>(exceptionType);
@@ -52,6 +54,10 @@ public class ExceptionRangeCFG {
 
   public void setHandler(BasicBlock handler) {
     this.handler = handler;
+  }
+
+  public int getHandlerBytecodeOffset() {
+    return handlerBytecodeOffset;
   }
 
   public List<BasicBlock> getProtectedRange() {

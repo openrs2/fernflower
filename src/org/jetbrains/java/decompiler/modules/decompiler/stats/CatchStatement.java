@@ -45,7 +45,7 @@ public class CatchStatement extends Statement {
         vars.add(new VarExprent(DecompilerContext.getCounterContainer().getCounterAndIncrement(CounterContainer.VAR_COUNTER),
                                 new VarType(CodeConstants.TYPE_OBJECT, 0, edge.getExceptions().get(0)),
                                 // FIXME: for now simply the first type. Should get the first common superclass when possible.
-                                DecompilerContext.getVarProcessor()));
+                                DecompilerContext.getVarProcessor(), -1, edge.getDestinationBytecodeOffset()));
       }
     }
 
@@ -187,7 +187,7 @@ public class CatchStatement extends Statement {
       cs.exctstrings.add(new ArrayList<>(exc));
       cs.vars.add(new VarExprent(DecompilerContext.getCounterContainer().getCounterAndIncrement(CounterContainer.VAR_COUNTER),
                                  new VarType(CodeConstants.TYPE_OBJECT, 0, exc.get(0)),
-                                 DecompilerContext.getVarProcessor()));
+                                 DecompilerContext.getVarProcessor(), -1, this.vars.get(0).getBytecodeOffset()));
     }
 
     return cs;

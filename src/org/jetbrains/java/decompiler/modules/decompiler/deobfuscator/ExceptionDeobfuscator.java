@@ -376,7 +376,7 @@ public class ExceptionDeobfuscator {
       List<BasicBlock> lstSubrangeBlocks = getReachableBlocksRestricted(entry, range, engine);
       if (!lstSubrangeBlocks.isEmpty() && lstSubrangeBlocks.size() < range.getProtectedRange().size()) {
         // add new range
-        ExceptionRangeCFG subRange = new ExceptionRangeCFG(lstSubrangeBlocks, range.getHandler(), range.getExceptionTypes());
+        ExceptionRangeCFG subRange = new ExceptionRangeCFG(lstSubrangeBlocks, range.getHandler(), range.getHandlerBytecodeOffset(), range.getExceptionTypes());
         graph.getExceptions().add(subRange);
         // shrink the original range
         range.getProtectedRange().removeAll(lstSubrangeBlocks);

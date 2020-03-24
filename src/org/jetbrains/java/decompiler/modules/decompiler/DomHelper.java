@@ -77,7 +77,7 @@ public class DomHelper {
 
         ExceptionRangeCFG range = graph.getExceptionRange(succex, block);
         if (!range.isCircular()) {
-          stat.addSuccessor(new StatEdge(stat, stsuccex, range.getExceptionTypes()));
+          stat.addSuccessor(new StatEdge(stat, stsuccex, range.getHandlerBytecodeOffset(), range.getExceptionTypes()));
         }
       }
     }

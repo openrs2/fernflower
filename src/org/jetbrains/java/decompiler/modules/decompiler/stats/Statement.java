@@ -184,7 +184,7 @@ public class Statement implements IMatchable {
 
         if (setHandlers.contains(handler)) {
           if (!setNodes.containsKey(handler.id)) {
-            stat.addSuccessor(new StatEdge(stat, handler, edge.getExceptions()));
+            stat.addSuccessor(new StatEdge(stat, handler, edge.getDestinationBytecodeOffset(), edge.getExceptions()));
           }
         }
       }
