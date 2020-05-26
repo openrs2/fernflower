@@ -241,8 +241,6 @@ public class InitializerProcessor {
             }
           }
           break;
-        case Exprent.EXPRENT_FIELD:
-          return false;
       }
     }
 
