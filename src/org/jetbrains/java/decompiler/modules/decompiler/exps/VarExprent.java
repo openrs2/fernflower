@@ -123,6 +123,11 @@ public class VarExprent extends Exprent {
             buffer.append('(');
             buffer.append(Integer.toString(pc));
             buffer.append(") ");
+
+            if (originalPcTable.hasName(pc) && processor != null) {
+              name = originalPcTable.getName(pc);
+              processor.setVarName(varVersion, name);
+            }
           }
         }
 
