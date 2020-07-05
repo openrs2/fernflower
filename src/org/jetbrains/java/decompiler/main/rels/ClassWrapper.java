@@ -17,6 +17,7 @@ import org.jetbrains.java.decompiler.struct.StructMethod;
 import org.jetbrains.java.decompiler.struct.attr.StructGeneralAttribute;
 import org.jetbrains.java.decompiler.struct.attr.StructLocalVariableTableAttribute;
 import org.jetbrains.java.decompiler.struct.attr.StructMethodParametersAttribute;
+import org.jetbrains.java.decompiler.struct.attr.StructOriginalPcTableAttribute;
 import org.jetbrains.java.decompiler.struct.gen.MethodDescriptor;
 import org.jetbrains.java.decompiler.util.InterpreterUtil;
 import org.jetbrains.java.decompiler.util.VBStyleCollection;
@@ -186,6 +187,40 @@ public class ClassWrapper {
               return 0;
             });
           }
+        }
+
+        StructOriginalPcTableAttribute originalPcTable = mt.getAttribute(StructGeneralAttribute.ATTRIBUTE_ORIGINAL_PC_TABLE);
+        if (originalPcTable != null) {
+          methodWrapper.getOrBuildGraph().iterateExprents(rootExpr -> {
+            List<Exprent> exprs = rootExpr.getAllExprents(true);
+            exprs.add(rootExpr);
+
+            for (Exprent expr : exprs) {
+              if (expr.type != Exprent.EXPRENT_VAR) {
+                continue;
+              }
+
+              VarExprent varExpr = (VarExprent) expr;
+              if (!varExpr.isDefinition()) {
+                continue;
+              }
+
+              int bytecodeOffset = varExpr.getBytecodeOffset();
+              if (bytecodeOffset == -1 || !originalPcTable.hasOriginalPc(bytecodeOffset)) {
+                continue;
+              }
+
+              int pc = originalPcTable.getOriginalPc(bytecodeOffset);
+              if (!originalPcTable.hasName(pc)) {
+                continue;
+              }
+
+              String name = originalPcTable.getName(pc);
+              varProc.setVarName(varExpr.getVarVersionPair(), name);
+            }
+
+            return 0;
+          });
         }
       }
 
