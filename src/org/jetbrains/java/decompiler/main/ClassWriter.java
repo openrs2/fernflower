@@ -749,13 +749,6 @@ public class ClassWriter {
             buffer.append(' ');
 
             String parameterName = methodWrapper.varproc.getVarName(new VarVersionPair(index, 0));
-            if (methodParameters != null && i < methodParameters.size()) {
-              String myName = methodParameters.get(i).myName;
-              if (myName != null) {
-                parameterName = myName;
-                methodWrapper.varproc.setVarName(new VarVersionPair(index, 0), myName);
-              }
-            }
             buffer.append(parameterName == null ? "param" + index : parameterName); // null iff decompiled with errors
 
             paramCount++;

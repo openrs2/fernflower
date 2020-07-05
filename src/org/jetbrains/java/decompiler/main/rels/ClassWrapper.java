@@ -14,14 +14,14 @@ import org.jetbrains.java.decompiler.modules.decompiler.vars.VarProcessor;
 import org.jetbrains.java.decompiler.modules.decompiler.vars.VarVersionPair;
 import org.jetbrains.java.decompiler.struct.StructClass;
 import org.jetbrains.java.decompiler.struct.StructMethod;
+import org.jetbrains.java.decompiler.struct.attr.StructGeneralAttribute;
 import org.jetbrains.java.decompiler.struct.attr.StructLocalVariableTableAttribute;
+import org.jetbrains.java.decompiler.struct.attr.StructMethodParametersAttribute;
 import org.jetbrains.java.decompiler.struct.gen.MethodDescriptor;
 import org.jetbrains.java.decompiler.util.InterpreterUtil;
 import org.jetbrains.java.decompiler.util.VBStyleCollection;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ClassWrapper {
   private final StructClass classStruct;
@@ -139,13 +139,37 @@ public class ClassWrapper {
         classStruct.getFields().forEach(f -> namesCollector.addName(f.getName()));
         varProc.refreshVarNames(namesCollector);
 
+        Map<Integer, String> paramNames = new HashMap<>();
+
+        if (DecompilerContext.getOption(IFernflowerPreferences.USE_METHOD_PARAMETERS)) {
+          StructMethodParametersAttribute attr = mt.getAttribute(StructGeneralAttribute.ATTRIBUTE_METHOD_PARAMETERS);
+          if (attr != null) {
+            List<StructMethodParametersAttribute.Entry> entries = attr.getEntries();
+            int index = mt.hasModifier(CodeConstants.ACC_STATIC) ? 0 : 1;
+            for (int i = 0; i < md.params.length && i < entries.size(); i++) {
+              String myName = entries.get(i).myName;
+              if (myName != null) {
+                paramNames.put(index, myName);
+              }
+              index += md.params[i].stackSize;
+            }
+          }
+        }
+
         // if debug information present and should be used
         if (DecompilerContext.getOption(IFernflowerPreferences.USE_DEBUG_VAR_NAMES)) {
           StructLocalVariableTableAttribute attr = mt.getLocalVariableAttr();
           if (attr != null) {
             // only param names here
-            varProc.setDebugVarNames(attr.getMapParamNames());
+            paramNames.putAll(attr.getMapParamNames());
+          }
+        }
 
+        varProc.setDebugVarNames(paramNames);
+
+        if (DecompilerContext.getOption(IFernflowerPreferences.USE_DEBUG_VAR_NAMES)) {
+          StructLocalVariableTableAttribute attr = mt.getLocalVariableAttr();
+          if (attr != null) {
             // the rest is here
             methodWrapper.getOrBuildGraph().iterateExprents(exprent -> {
               List<Exprent> lst = exprent.getAllExprents(true);
