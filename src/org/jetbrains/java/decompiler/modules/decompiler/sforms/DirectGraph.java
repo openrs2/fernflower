@@ -2,13 +2,14 @@
 package org.jetbrains.java.decompiler.modules.decompiler.sforms;
 
 import org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent;
+import org.jetbrains.java.decompiler.modules.decompiler.exps.VarExprent;
 import org.jetbrains.java.decompiler.modules.decompiler.sforms.FlattenStatementsHelper.FinallyPathWrapper;
+import org.jetbrains.java.decompiler.modules.decompiler.stats.CatchAllStatement;
+import org.jetbrains.java.decompiler.modules.decompiler.stats.CatchStatement;
+import org.jetbrains.java.decompiler.modules.decompiler.stats.Statement;
 import org.jetbrains.java.decompiler.util.VBStyleCollection;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 
 public class DirectGraph {
@@ -77,8 +78,11 @@ public class DirectGraph {
     }
   }
 
-
   public boolean iterateExprents(ExprentIterator iter) {
+    return iterateExprents(iter, false);
+  }
+
+  public boolean iterateExprents(ExprentIterator iter, boolean decls) {
 
     LinkedList<DirectNode> stack = new LinkedList<>();
     stack.add(first);
@@ -93,6 +97,42 @@ public class DirectGraph {
         continue;
       }
       setVisited.add(node);
+
+      if (decls) {
+        for (Iterator<Exprent> it = node.statement.getVarDefinitions().iterator(); it.hasNext(); ) {
+          int res = iter.processExprent(it.next());
+
+          if (res == 1) {
+            return false;
+          }
+
+          if (res == 2) {
+            it.remove();
+          }
+        }
+
+        List<VarExprent> vars = Collections.emptyList();
+        if (node.statement.type == Statement.TYPE_TRYCATCH) {
+          vars = ((CatchStatement) node.statement).getVars();
+        } else if (node.statement.type == Statement.TYPE_CATCHALL) {
+          CatchAllStatement stmt = (CatchAllStatement) node.statement;
+          if (!stmt.isFinally()) {
+            vars = stmt.getVars();
+          }
+        }
+
+        for (Iterator<VarExprent> it = vars.iterator(); it.hasNext(); ) {
+          int res = iter.processExprent(it.next());
+
+          if (res == 1) {
+            return false;
+          }
+
+          if (res == 2) {
+            it.remove();
+          }
+        }
+      }
 
       for (int i = 0; i < node.exprents.size(); i++) {
         int res = iter.processExprent(node.exprents.get(i));
