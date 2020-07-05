@@ -139,13 +139,19 @@ public class ClassWrapper {
         VarNamesCollector namesCollector = new VarNamesCollector();
         classStruct.getFields().forEach(f -> namesCollector.addName(f.getName()));
 
+        int index = mt.hasModifier(CodeConstants.ACC_STATIC) ? 0 : 1;
+        for (int i = 0; i < md.params.length; i++) {
+          varProc.setVarName(new VarVersionPair(index, 0), "arg" + i);
+          index += md.params[i].stackSize;
+        }
+
         Map<Integer, String> paramNames = new HashMap<>();
 
         if (DecompilerContext.getOption(IFernflowerPreferences.USE_METHOD_PARAMETERS)) {
           StructMethodParametersAttribute attr = mt.getAttribute(StructGeneralAttribute.ATTRIBUTE_METHOD_PARAMETERS);
           if (attr != null) {
             List<StructMethodParametersAttribute.Entry> entries = attr.getEntries();
-            int index = mt.hasModifier(CodeConstants.ACC_STATIC) ? 0 : 1;
+            index = mt.hasModifier(CodeConstants.ACC_STATIC) ? 0 : 1;
             for (int i = 0; i < md.params.length && i < entries.size(); i++) {
               String myName = entries.get(i).myName;
               if (myName != null) {
@@ -210,11 +216,13 @@ public class ClassWrapper {
               }
 
               int pc = originalPcTable.getOriginalPc(bytecodeOffset);
-              if (!originalPcTable.hasName(pc)) {
-                continue;
-              }
 
-              String name = originalPcTable.getName(pc);
+              String name;
+              if (originalPcTable.hasName(pc)) {
+                name = originalPcTable.getName(pc);
+              } else {
+                name = "local" + pc;
+              }
               varProc.setVarName(varExpr.getVarVersionPair(), name);
             }
 
