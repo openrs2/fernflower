@@ -138,7 +138,6 @@ public class ClassWrapper {
         // rename vars so that no one has the same name as a field
         VarNamesCollector namesCollector = new VarNamesCollector();
         classStruct.getFields().forEach(f -> namesCollector.addName(f.getName()));
-        varProc.refreshVarNames(namesCollector);
 
         Map<Integer, String> paramNames = new HashMap<>();
 
@@ -222,6 +221,8 @@ public class ClassWrapper {
             return 0;
           }, true);
         }
+
+        varProc.refreshVarNames(namesCollector);
       }
 
       DecompilerContext.getLogger().endMethod();
