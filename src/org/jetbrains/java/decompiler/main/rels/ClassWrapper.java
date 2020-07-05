@@ -185,7 +185,7 @@ public class ClassWrapper {
                   }
                 });
               return 0;
-            });
+            }, true);
           }
         }
 
@@ -220,7 +220,7 @@ public class ClassWrapper {
             }
 
             return 0;
-          });
+          }, true);
         }
       }
 
