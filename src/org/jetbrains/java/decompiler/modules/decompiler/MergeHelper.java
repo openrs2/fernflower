@@ -280,14 +280,7 @@ public class MergeHelper {
     List<Exprent> lstExpr = lastData.getExprents();
     lastDoExprent = lstExpr.get(lstExpr.size() - 1);
 
-    boolean issingle = false;
-    if (lstExpr.size() == 1) {  // single exprent
-      if (lastData.getAllPredecessorEdges().size() > 1) { // break edges
-        issingle = true;
-      }
-    }
-
-    boolean haslast = issingle || lastDoExprent.type == Exprent.EXPRENT_ASSIGNMENT || lastDoExprent.type == Exprent.EXPRENT_FUNCTION;
+    boolean haslast = lastDoExprent.type == Exprent.EXPRENT_ASSIGNMENT || lastDoExprent.type == Exprent.EXPRENT_FUNCTION;
     if (!haslast) {
       return;
     }
@@ -323,7 +316,7 @@ public class MergeHelper {
       }
     }
 
-    if (hasinit || issingle) {  // FIXME: issingle sufficient?
+    if (hasinit) {
       Set<Statement> set = stat.getNeighboursSet(StatEdge.TYPE_CONTINUE, Statement.DIRECTION_BACKWARD);
       set.remove(lastData);
 
@@ -332,9 +325,7 @@ public class MergeHelper {
       }
 
       stat.setLooptype(DoStatement.LOOP_FOR);
-      if (hasinit) {
-        stat.setInitExprent(preData.getExprents().remove(preData.getExprents().size() - 1));
-      }
+      stat.setInitExprent(preData.getExprents().remove(preData.getExprents().size() - 1));
       stat.setIncExprent(lastData.getExprents().remove(lastData.getExprents().size() - 1));
     }
 
