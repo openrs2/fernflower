@@ -4,6 +4,7 @@ package org.jetbrains.java.decompiler.modules.decompiler;
 import org.jetbrains.java.decompiler.code.cfg.BasicBlock;
 import org.jetbrains.java.decompiler.main.DecompilerContext;
 import org.jetbrains.java.decompiler.main.collectors.CounterContainer;
+import org.jetbrains.java.decompiler.modules.decompiler.exps.AssignmentExprent;
 import org.jetbrains.java.decompiler.modules.decompiler.exps.Exprent;
 import org.jetbrains.java.decompiler.modules.decompiler.exps.IfExprent;
 import org.jetbrains.java.decompiler.modules.decompiler.stats.*;
@@ -268,7 +269,7 @@ public class MergeHelper {
   }
 
   private static void matchFor(DoStatement stat) {
-    Exprent lastDoExprent, initDoExprent;
+    Exprent lastDoExprent, initDoExprent = null;
     Statement lastData, preData = null;
 
     // get last exprent
@@ -316,18 +317,36 @@ public class MergeHelper {
       }
     }
 
-    if (hasinit) {
-      Set<Statement> set = stat.getNeighboursSet(StatEdge.TYPE_CONTINUE, Statement.DIRECTION_BACKWARD);
-      set.remove(lastData);
-
-      if (!set.isEmpty()) {
-        return;
-      }
-
-      stat.setLooptype(DoStatement.LOOP_FOR);
-      stat.setInitExprent(preData.getExprents().remove(preData.getExprents().size() - 1));
-      stat.setIncExprent(lastData.getExprents().remove(lastData.getExprents().size() - 1));
+    if (!hasinit) {
+      return;
     }
+
+    Exprent initVar = ((AssignmentExprent) initDoExprent).getLeft();
+    Exprent incVar;
+    if (lastDoExprent.type == Exprent.EXPRENT_ASSIGNMENT) {
+      incVar = ((AssignmentExprent) lastDoExprent).getLeft();
+    } else {
+      incVar = lastDoExprent.getAllExprents().get(0);
+    }
+
+    if (!initVar.equals(incVar)) {
+      return;
+    }
+
+    if (!stat.getConditionExprent().containsExprent(initVar)) {
+      return;
+    }
+
+    Set<Statement> set = stat.getNeighboursSet(StatEdge.TYPE_CONTINUE, Statement.DIRECTION_BACKWARD);
+    set.remove(lastData);
+
+    if (!set.isEmpty()) {
+      return;
+    }
+
+    stat.setLooptype(DoStatement.LOOP_FOR);
+    stat.setInitExprent(preData.getExprents().remove(preData.getExprents().size() - 1));
+    stat.setIncExprent(lastData.getExprents().remove(lastData.getExprents().size() - 1));
 
     if (lastData.getExprents().isEmpty()) {
       List<StatEdge> lst = lastData.getAllSuccessorEdges();
