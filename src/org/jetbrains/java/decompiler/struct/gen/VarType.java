@@ -2,7 +2,14 @@
 package org.jetbrains.java.decompiler.struct.gen;
 
 import org.jetbrains.java.decompiler.code.CodeConstants;
+import org.jetbrains.java.decompiler.main.DecompilerContext;
+import org.jetbrains.java.decompiler.struct.StructClass;
 import org.jetbrains.java.decompiler.util.InterpreterUtil;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class VarType {  // TODO: optimize switch
 
@@ -29,6 +36,8 @@ public class VarType {  // TODO: optimize switch
   public static final VarType VARTYPE_BYTE_OBJ = new VarType(CodeConstants.TYPE_OBJECT, 0, "java/lang/Byte");
   public static final VarType VARTYPE_SHORT_OBJ = new VarType(CodeConstants.TYPE_OBJECT, 0, "java/lang/Short");
   public static final VarType VARTYPE_VOID = new VarType(CodeConstants.TYPE_VOID);
+
+  private static final ClassLoader bootstrapClassLoader = new ClassLoader(null) {};
 
   public final int type;
   public final int arrayDim;
@@ -341,11 +350,94 @@ public class VarType {  // TODO: optimize switch
             return VARTYPE_INT;
           }
         case CodeConstants.TYPE_FAMILY_OBJECT:
-          return VARTYPE_OBJECT;
+          try {
+            String value = getCommonSuperClass(type1.value, type2.value);
+            return new VarType(CodeConstants.TYPE_OBJECT, 0, value);
+          } catch (ClassNotFoundException ex) {
+            throw new RuntimeException(ex);
+          }
       }
     }
 
     return null;
+  }
+
+  private static String getCommonSuperClass(String c, String d) throws ClassNotFoundException {
+    if (isAssignableFrom(c, d)) {
+      return c;
+    } else if (isAssignableFrom(d, c)) {
+      return d;
+    } else if (isInterface(c) || isInterface(d)) {
+      return "java/lang/Object";
+    }
+
+    do {
+      c = Objects.requireNonNull(getSuperClass(c));
+    } while (!isAssignableFrom(c, d));
+
+    return c;
+  }
+
+  private static boolean isAssignableFrom(String c, String d) throws ClassNotFoundException {
+    return c.equals(d) || isSuperClassOf(c, d) || isSuperInterfaceOf(c, d);
+  }
+
+  private static boolean isSuperClassOf(String c, String d) throws ClassNotFoundException {
+    String superClass = getSuperClass(d);
+    if (superClass != null) {
+      return c.equals(superClass) || isSuperClassOf(c, superClass);
+    } else {
+      return false;
+    }
+  }
+
+  private static boolean isSuperInterfaceOf(String c, String d) throws ClassNotFoundException {
+    for (String superInterface : getSuperInterfaces(d)) {
+      if (c.equals(superInterface) || isSuperInterfaceOf(c, superInterface)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private static boolean isInterface(String c) throws ClassNotFoundException {
+    StructClass structClass = DecompilerContext.getStructContext().getClass(c);
+    if (structClass != null) {
+      return structClass.hasModifier(CodeConstants.ACC_INTERFACE);
+    }
+
+    return bootstrapClassLoader.loadClass(c.replace('/', '.')).isInterface();
+  }
+
+  private static String getSuperClass(String c) throws ClassNotFoundException {
+    StructClass structClass = DecompilerContext.getStructContext().getClass(c);
+    if (structClass != null) {
+      if (structClass.superClass != null) {
+        return (String) structClass.superClass.value;
+      } else {
+        return null;
+      }
+    }
+
+    Class<?> superClass = bootstrapClassLoader.loadClass(c.replace('/', '.')).getSuperclass();
+    if (superClass != null) {
+      return superClass.getName().replace('.', '/');
+    } else {
+      return null;
+    }
+  }
+
+  private static List<String> getSuperInterfaces(String c) throws ClassNotFoundException {
+    StructClass structClass = DecompilerContext.getStructContext().getClass(c);
+    if (structClass != null) {
+      return Arrays.asList(structClass.getInterfaceNames());
+    }
+
+    Class<?>[] superInterfaces = bootstrapClassLoader.loadClass(c.replace('/', '.')).getInterfaces();
+    return Arrays.stream(superInterfaces)
+      .map(i -> i.getName().replace('.', '/'))
+      .collect(Collectors.toList());
   }
 
   public static VarType getMinTypeInFamily(int family) {
