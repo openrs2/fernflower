@@ -169,35 +169,7 @@ public class VarVersionsProcessor {
           for (int j = i + 1; j < lstVersions.size(); j++) {
             VarVersionPair secondPair = new VarVersionPair(ent.getKey(), lstVersions.get(j));
 
-            // find all scopes the two variable versions are assigned in
-            Set<DirectNode> nodes = new HashSet<>();
-            for (DirectNode node : graph.nodes) {
-              for (Exprent expr : node.exprents) {
-                if (expr.type != Exprent.EXPRENT_ASSIGNMENT) {
-                  continue;
-                }
-
-                AssignmentExprent assignExpr = (AssignmentExprent) expr;
-
-                Exprent leftExpr = assignExpr.getLeft();
-                if (leftExpr.type != Exprent.EXPRENT_VAR) {
-                  continue;
-                }
-
-                VarExprent varExpr = (VarExprent) leftExpr;
-                int index = varExpr.getIndex();
-                int version = varExpr.getVersion();
-
-                if (index == firstPair.var && version == firstPair.version) {
-                  nodes.add(node);
-                } else if (index == secondPair.var && version == secondPair.version) {
-                  nodes.add(node);
-                }
-              }
-            }
-
-            // only merge variables if they're assigned in the same scope
-            if (nodes.size() > 1) {
+            if (!shouldMerge(graph, firstPair, secondPair)) {
               continue;
             }
 
@@ -237,6 +209,38 @@ public class VarVersionsProcessor {
     if (!mapMergedVersions.isEmpty()) {
       updateVersions(graph, mapMergedVersions);
     }
+  }
+
+  private static boolean shouldMerge(DirectGraph graph, VarVersionPair firstPair, VarVersionPair secondPair) {
+    // find all scopes the two variable versions are assigned in
+    Set<DirectNode> nodes = new HashSet<>();
+    for (DirectNode node : graph.nodes) {
+      for (Exprent expr : node.exprents) {
+        if (expr.type != Exprent.EXPRENT_ASSIGNMENT) {
+          continue;
+        }
+
+        AssignmentExprent assignExpr = (AssignmentExprent) expr;
+
+        Exprent leftExpr = assignExpr.getLeft();
+        if (leftExpr.type != Exprent.EXPRENT_VAR) {
+          continue;
+        }
+
+        VarExprent varExpr = (VarExprent) leftExpr;
+        int index = varExpr.getIndex();
+        int version = varExpr.getVersion();
+
+        if (index == firstPair.var && version == firstPair.version) {
+          nodes.add(node);
+        } else if (index == secondPair.var && version == secondPair.version) {
+          nodes.add(node);
+        }
+      }
+    }
+
+    // only merge variables if they're assigned in the same scope
+    return nodes.size() > 1;
   }
 
   private void setNewVarIndices(VarTypeProcessor typeProcessor, DirectGraph graph, VarVersionsProcessor previousVersionsProcessor) {
