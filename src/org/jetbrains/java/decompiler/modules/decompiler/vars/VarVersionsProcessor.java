@@ -42,7 +42,7 @@ public class VarVersionsProcessor {
 
     typeProcessor.calculateVarTypes(root, graph);
 
-    simpleMerge(typeProcessor, graph, method);
+    simpleMerge(typeProcessor, graph, method, previousVersionsProcessor);
 
     // FIXME: advanced merging
 
@@ -136,7 +136,7 @@ public class VarVersionsProcessor {
     }
   }
 
-  private static void simpleMerge(VarTypeProcessor typeProcessor, DirectGraph graph, StructMethod mt) {
+  private static void simpleMerge(VarTypeProcessor typeProcessor, DirectGraph graph, StructMethod mt, VarVersionsProcessor prev) {
     Map<VarVersionPair, VarType> mapExprentMaxTypes = typeProcessor.getMapExprentMaxTypes();
     Map<VarVersionPair, VarType> mapExprentMinTypes = typeProcessor.getMapExprentMinTypes();
 
@@ -169,7 +169,7 @@ public class VarVersionsProcessor {
           for (int j = i + 1; j < lstVersions.size(); j++) {
             VarVersionPair secondPair = new VarVersionPair(ent.getKey(), lstVersions.get(j));
 
-            if (!shouldMerge(graph, firstPair, secondPair)) {
+            if (!shouldMerge(graph, mt, firstPair, secondPair, prev)) {
               continue;
             }
 
@@ -211,9 +211,36 @@ public class VarVersionsProcessor {
     }
   }
 
-  private static boolean shouldMerge(DirectGraph graph, VarVersionPair firstPair, VarVersionPair secondPair) {
+  private static boolean shouldMerge(DirectGraph graph, StructMethod mt, VarVersionPair firstPair, VarVersionPair secondPair, VarVersionsProcessor prev) {
+    // the scope of an argument always encompasses the scope of another candidate
+    MethodDescriptor desc = MethodDescriptor.parseDescriptor(mt.getDescriptor());
+
+    int firstLocal = 0;
+    if ((mt.getAccessFlags() & CodeConstants.ACC_STATIC) == 0) {
+      firstLocal++;
+    }
+    for (VarType type : desc.params) {
+      firstLocal += type.stackSize;
+    }
+
+    if (prev != null) {
+      Integer firstIndex = prev.mapOriginalVarIndices.get(firstPair.var);
+      if (firstIndex != null && firstIndex < firstLocal) {
+        return true;
+      }
+
+      Integer secondIndex = prev.mapOriginalVarIndices.get(secondPair.var);
+      if (secondIndex != null && secondIndex < firstLocal) {
+        return true;
+      }
+    } else if (firstPair.var < firstLocal || secondPair.var < firstLocal) {
+      return true;
+    }
+
     // find all scopes the two variable versions are assigned in
-    Set<DirectNode> nodes = new HashSet<>();
+    Set<DirectNode> firstNodes = new HashSet<>();
+    Set<DirectNode> secondNodes = new HashSet<>();
+
     for (DirectNode node : graph.nodes) {
       for (Exprent expr : node.exprents) {
         if (expr.type != Exprent.EXPRENT_ASSIGNMENT) {
@@ -232,15 +259,23 @@ public class VarVersionsProcessor {
         int version = varExpr.getVersion();
 
         if (index == firstPair.var && version == firstPair.version) {
-          nodes.add(node);
+          firstNodes.add(node);
         } else if (index == secondPair.var && version == secondPair.version) {
-          nodes.add(node);
+          secondNodes.add(node);
         }
       }
     }
 
-    // only merge variables if they're assigned in the same scope
-    return nodes.size() > 1;
+    // only merge variables if one of the scopes is contained within another
+    for (DirectNode firstNode : firstNodes) {
+      for (DirectNode secondNode : secondNodes) {
+        if (firstNode.statement.containsStatement(secondNode.statement) || secondNode.statement.containsStatement(firstNode.statement)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   private void setNewVarIndices(VarTypeProcessor typeProcessor, DirectGraph graph, VarVersionsProcessor previousVersionsProcessor) {
