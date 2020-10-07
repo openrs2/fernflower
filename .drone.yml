@@ -4,12 +4,12 @@ name: default
 
 steps:
   - name: build
-    image: registry.openrs2.dev/openrs2-dev
+    image: registry.openrs2.org/openrs2-dev
     commands:
       - mvn clean verify
 
   - name: deploy
-    image: registry.openrs2.dev/openrs2-dev
+    image: registry.openrs2.org/openrs2-dev
     commands:
       - |
         cat <<EOF > $${HOME}/.m2/settings.xml
