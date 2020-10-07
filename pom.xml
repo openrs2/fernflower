@@ -3,9 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>dev.openrs2</groupId>
+    <groupId>org.openrs2</groupId>
     <artifactId>openrs2-parent</artifactId>
-    <version>1.0.11</version>
+    <version>1.0.13</version>
   </parent>
 
   <artifactId>fernflower</artifactId>
@@ -22,18 +22,18 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:https://git.openrs2.dev/openrs2/fernflower.git</connection>
-    <developerConnection>scm:git:git@git.openrs2.dev:openrs2/fernflower.git</developerConnection>
-    <url>https://git.openrs2.dev/openrs2/fernflower</url>
+    <connection>scm:git:https://git.openrs2.org/openrs2/fernflower.git</connection>
+    <developerConnection>scm:git:git@git.openrs2.org:openrs2/fernflower.git</developerConnection>
+    <url>https://git.openrs2.org/openrs2/fernflower</url>
     <tag>HEAD</tag>
   </scm>
   <issueManagement>
     <system>Gitea</system>
-    <url>https://git.openrs2.dev/openrs2/fernflower/issues</url>
+    <url>https://git.openrs2.org/openrs2/fernflower/issues</url>
   </issueManagement>
   <ciManagement>
     <system>Jenkins</system>
-    <url>https://build.openrs2.dev/job/fernflower/</url>
+    <url>https://build.openrs2.org/job/fernflower/</url>
   </ciManagement>
 
   <dependencies>
@@ -55,7 +55,7 @@
     <repository>
       <id>openrs2</id>
       <name>OpenRS2</name>
-      <url>https://repo.openrs2.dev/repository/openrs2/</url>
+      <url>https://repo.openrs2.org/repository/openrs2/</url>
       <releases>
         <enabled>true</enabled>
         <updatePolicy>never</updatePolicy>
@@ -67,7 +67,7 @@
     <repository>
       <id>openrs2-snapshots</id>
       <name>OpenRS2 Snapshots</name>
-      <url>https://repo.openrs2.dev/repository/openrs2-snapshots/</url>
+      <url>https://repo.openrs2.org/repository/openrs2-snapshots/</url>
       <releases>
         <enabled>false</enabled>
       </releases>

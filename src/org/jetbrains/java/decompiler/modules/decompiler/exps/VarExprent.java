@@ -119,7 +119,7 @@ public class VarExprent extends Exprent {
           if (originalPcTable != null && originalPcTable.hasOriginalPc(bytecodeOffset)) {
             int pc = originalPcTable.getOriginalPc(bytecodeOffset);
             buffer.append('@');
-            buffer.append(DecompilerContext.getImportCollector().getShortName("dev.openrs2.deob.annotation.Pc"));
+            buffer.append(DecompilerContext.getImportCollector().getShortName("org.openrs2.deob.annotation.Pc"));
             buffer.append('(');
             buffer.append(Integer.toString(pc));
             buffer.append(") ");
