@@ -32,8 +32,8 @@
     <url>https://git.openrs2.org/openrs2/fernflower/issues</url>
   </issueManagement>
   <ciManagement>
-    <system>Jenkins</system>
-    <url>https://build.openrs2.org/job/fernflower/</url>
+    <system>Drone</system>
+    <url>https://build.openrs2.org/openrs2/fernflower/</url>
   </ciManagement>
 
   <dependencies>
